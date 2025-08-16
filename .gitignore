@@ -1,0 +1,40 @@
+# Visual Studio build folders
+.vs/
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]uild/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# NuGet packages
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+
+# Logs
+*.log
+
+# Test results
+TestResults/
+
+# Rider/JetBrains IDEs
+.idea/
+*.iml
+
+# Publish output
+publish/
+
+# Keep OutputFiles folder but not contents
+ProjectLPR381/OutputFiles/*
+!ProjectLPR381/OutputFiles/.gitkeep
