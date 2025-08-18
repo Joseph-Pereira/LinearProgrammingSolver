@@ -32,16 +32,27 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>LPSolver.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\BranchNBound.cs" />
+    <Compile Include="Algorithms\CuttingPlane.cs" />
+    <Compile Include="Algorithms\KnapsackBnB.cs" />
+    <Compile Include="Algorithms\PrimalSimplex.cs" />
+    <Compile Include="Algorithms\RevisedSimplex.cs" />
     <Compile Include="HomeForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="HomeForm.Designer.cs">
       <DependentUpon>HomeForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="InputParser.cs" />
+    <Compile Include="Model.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="ResultForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -57,9 +68,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Algorithms\" />
-    <Folder Include="InputFiles\" />
     <Folder Include="OutputFiles\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="InputFiles\Ex1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="HomeForm.resx">
+      <DependentUpon>HomeForm.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

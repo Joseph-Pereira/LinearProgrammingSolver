@@ -8,5 +8,7 @@ namespace LPSolver.Algorithms
 {
     internal class PrimalSimplex
     {
+       
+       
     }
 }
