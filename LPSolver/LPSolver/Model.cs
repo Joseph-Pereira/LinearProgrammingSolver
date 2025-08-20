@@ -17,6 +17,7 @@ namespace LPSolver
         public LinearStorage()
         {
             Constraints = new List<Constraint>();
+
         }
 
     }
@@ -27,5 +28,27 @@ namespace LPSolver
         public string Sign {  get; set; }
         public double RHS { get; set; }
 
+    }
+
+    public class CanonicalForm
+    {
+       
+
+        public CanonicalForm()
+        {
+            
+
+           
+            
+        }
+       
+
+
+    }
+    public class CanonicalConstraint
+    {
+        public double[] Coefiecients { get; set; }
+        public string AdditionalValue { get; set; }
+        public double RHS { get; set; }
     }
 }
