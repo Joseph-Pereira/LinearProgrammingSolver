@@ -19,12 +19,11 @@ namespace LPSolver
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
             Application.Run(new HomeForm());
 
 
 
-            string filePath = @"C:\School\Third year\LPR381\Project\LinearProgrammingSolver\LPSolver\LPSolver\InputFiles\Ex1.txt";
+            string filePath = @"C:\Users\ferre\OneDrive - belgiumcampus.ac.za\LPR381\Project\LinearProgrammingSolver\LPSolver\LPSolver\InputFiles\Ex1.txt";
 
             var storage = InputParser.Parse(filePath);
 
