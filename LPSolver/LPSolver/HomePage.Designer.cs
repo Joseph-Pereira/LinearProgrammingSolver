@@ -45,12 +45,16 @@
             // 
             // btnRun
             // 
+            this.btnRun.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(157)))), ((int)(((byte)(44)))));
+            this.btnRun.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRun.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnRun.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(67)))), ((int)(((byte)(101)))));
             this.btnRun.Location = new System.Drawing.Point(62, 168);
             this.btnRun.Name = "btnRun";
-            this.btnRun.Size = new System.Drawing.Size(104, 34);
+            this.btnRun.Size = new System.Drawing.Size(104, 59);
             this.btnRun.TabIndex = 0;
             this.btnRun.Text = "Run";
-            this.btnRun.UseVisualStyleBackColor = true;
+            this.btnRun.UseVisualStyleBackColor = false;
             this.btnRun.Click += new System.EventHandler(this.btnRun_Click_1);
             // 
             // label1
@@ -65,7 +69,9 @@
             // 
             // txtFile
             // 
+            this.txtFile.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(235)))), ((int)(((byte)(221)))), ((int)(((byte)(197)))));
             this.txtFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtFile.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(67)))), ((int)(((byte)(101)))));
             this.txtFile.Location = new System.Drawing.Point(62, 84);
             this.txtFile.Name = "txtFile";
             this.txtFile.ReadOnly = true;
@@ -84,20 +90,27 @@
             // 
             // btnBrowse
             // 
+            this.btnBrowse.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(157)))), ((int)(((byte)(44)))));
+            this.btnBrowse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnBrowse.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnBrowse.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(67)))), ((int)(((byte)(101)))));
             this.btnBrowse.Location = new System.Drawing.Point(168, 49);
             this.btnBrowse.Name = "btnBrowse";
             this.btnBrowse.Size = new System.Drawing.Size(114, 29);
             this.btnBrowse.TabIndex = 4;
             this.btnBrowse.Text = "Browse";
-            this.btnBrowse.UseVisualStyleBackColor = true;
+            this.btnBrowse.UseVisualStyleBackColor = false;
             this.btnBrowse.Click += new System.EventHandler(this.btnBrowse_Click);
             // 
             // cmbAlgo
             // 
+            this.cmbAlgo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(235)))), ((int)(((byte)(221)))), ((int)(((byte)(197)))));
+            this.cmbAlgo.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cmbAlgo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(67)))), ((int)(((byte)(101)))));
             this.cmbAlgo.FormattingEnabled = true;
             this.cmbAlgo.Location = new System.Drawing.Point(248, 125);
             this.cmbAlgo.Name = "cmbAlgo";
-            this.cmbAlgo.Size = new System.Drawing.Size(193, 21);
+            this.cmbAlgo.Size = new System.Drawing.Size(193, 28);
             this.cmbAlgo.TabIndex = 5;
             // 
             // label3
@@ -112,37 +125,49 @@
             // 
             // btnSensitivity
             // 
-            this.btnSensitivity.Location = new System.Drawing.Point(221, 168);
+            this.btnSensitivity.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(157)))), ((int)(((byte)(44)))));
+            this.btnSensitivity.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(67)))), ((int)(((byte)(101)))));
+            this.btnSensitivity.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnSensitivity.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSensitivity.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(67)))), ((int)(((byte)(101)))));
+            this.btnSensitivity.Location = new System.Drawing.Point(223, 168);
             this.btnSensitivity.Name = "btnSensitivity";
-            this.btnSensitivity.Size = new System.Drawing.Size(109, 34);
+            this.btnSensitivity.Size = new System.Drawing.Size(109, 59);
             this.btnSensitivity.TabIndex = 7;
             this.btnSensitivity.Text = "Sensitivity Analysis";
-            this.btnSensitivity.UseVisualStyleBackColor = true;
+            this.btnSensitivity.UseVisualStyleBackColor = false;
             this.btnSensitivity.Click += new System.EventHandler(this.btnSensitivity_Click_1);
             // 
             // btnExport
             // 
+            this.btnExport.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(229)))), ((int)(((byte)(157)))), ((int)(((byte)(44)))));
+            this.btnExport.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExport.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExport.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(67)))), ((int)(((byte)(101)))));
             this.btnExport.Location = new System.Drawing.Point(384, 168);
             this.btnExport.Name = "btnExport";
-            this.btnExport.Size = new System.Drawing.Size(109, 34);
+            this.btnExport.Size = new System.Drawing.Size(109, 59);
             this.btnExport.TabIndex = 8;
             this.btnExport.Text = "Export Result";
-            this.btnExport.UseVisualStyleBackColor = true;
+            this.btnExport.UseVisualStyleBackColor = false;
             this.btnExport.Click += new System.EventHandler(this.btnExport_Click_1);
             // 
             // rtbPreview
             // 
-            this.rtbPreview.Location = new System.Drawing.Point(62, 252);
+            this.rtbPreview.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(235)))), ((int)(((byte)(221)))), ((int)(((byte)(197)))));
+            this.rtbPreview.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(67)))), ((int)(((byte)(101)))));
+            this.rtbPreview.Location = new System.Drawing.Point(62, 294);
             this.rtbPreview.Name = "rtbPreview";
             this.rtbPreview.Size = new System.Drawing.Size(431, 138);
             this.rtbPreview.TabIndex = 9;
             this.rtbPreview.Text = "";
+            this.rtbPreview.TextChanged += new System.EventHandler(this.rtbPreview_TextChanged);
             // 
             // label4
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(58, 219);
+            this.label4.Location = new System.Drawing.Point(58, 261);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(159, 20);
             this.label4.TabIndex = 10;
@@ -152,7 +177,7 @@
             // 
             this.label5.AutoSize = true;
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label5.Location = new System.Drawing.Point(58, 406);
+            this.label5.Location = new System.Drawing.Point(58, 448);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(159, 20);
             this.label5.TabIndex = 11;
@@ -160,7 +185,9 @@
             // 
             // rtbResults
             // 
-            this.rtbResults.Location = new System.Drawing.Point(62, 429);
+            this.rtbResults.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(235)))), ((int)(((byte)(221)))), ((int)(((byte)(197)))));
+            this.rtbResults.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(67)))), ((int)(((byte)(101)))));
+            this.rtbResults.Location = new System.Drawing.Point(62, 471);
             this.rtbResults.Name = "rtbResults";
             this.rtbResults.Size = new System.Drawing.Size(431, 148);
             this.rtbResults.TabIndex = 12;
@@ -171,6 +198,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(243)))), ((int)(((byte)(213)))), ((int)(((byte)(141)))));
             this.ClientSize = new System.Drawing.Size(573, 641);
             this.Controls.Add(this.rtbResults);
             this.Controls.Add(this.label5);

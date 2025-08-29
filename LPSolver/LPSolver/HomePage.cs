@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using LPSolver.Analysis;  // for SensitivityAnalyzer, SensitivityReport, Range
+
 
 namespace LPSolver
 {
@@ -17,6 +19,7 @@ namespace LPSolver
         private List<Dictionary<string, double>> _finalTableau;
         private double[] _xstar;
         private double _zstar;
+        private LinearStorage _lastModel;  
 
         public HomeForm()
         {
@@ -106,6 +109,7 @@ namespace LPSolver
             {
                 // Parse model from file
                 var model = InputParser.Parse(txtFile.Text);
+                _lastModel = model;
 
                 List<List<Dictionary<string, double>>> allIterations = null;
 
@@ -184,19 +188,47 @@ namespace LPSolver
                 rtbResults.Text = "[ERROR] " + ex.Message;
                 MessageBox.Show(ex.Message, "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+
         }
 
         private void btnSensitivity_Click_1(object sender, EventArgs e)
         {
-            if (_finalTableau == null)
+            if (_finalTableau == null || _lastModel == null)
             {
-                MessageBox.Show("Solve a model first.");
+                MessageBox.Show("Run a simplex solve first.");
                 return;
             }
 
-            // If/when you add SensitivityAnalyzer, uncomment:
-            // var report = Analysis.SensitivityAnalyzer.Run(_finalTableau).AsText();
-            // ResultsLine(); ResultsLine(report);
+            var report = LPSolver.Analysis.SensitivityAnalyzer.Run(_finalTableau, _lastModel);
+
+            // Append to results box
+            rtbResults.AppendText(Environment.NewLine + "=== Sensitivity & Duality ===" + Environment.NewLine);
+
+            // Dual prices
+            rtbResults.AppendText("Dual prices (y): " +
+                "[" + string.Join(", ", report.DualPrices.Select(v => v.ToString("0.000"))) + "]" + Environment.NewLine);
+
+            // Reduced costs
+            rtbResults.AppendText("Reduced costs:" + Environment.NewLine);
+            foreach (var kv in report.ReducedCosts)
+                rtbResults.AppendText($"  {kv.Key}: {kv.Value:0.000}{Environment.NewLine}");
+
+            // RHS ranges
+            rtbResults.AppendText("RHS ranges:" + Environment.NewLine);
+            foreach (var kv in report.RhsRanges)
+            {
+                string lo = kv.Value.Down.HasValue ? kv.Value.Down.Value.ToString("0.000") : "-inf";
+                string hi = kv.Value.Up.HasValue ? kv.Value.Up.Value.ToString("0.000") : "+inf";
+                rtbResults.AppendText($"  {kv.Key}: [{lo} , {hi}]{Environment.NewLine}");
+            }
+
+
+            // Strong duality check
+            double diff = Math.Abs(report.ZStar - report.bTy);
+            rtbResults.AppendText($"Strong duality: z*={report.ZStar:0.000}, b^T y={report.bTy:0.000}, diff={diff:0.000}" + Environment.NewLine);
+
+
         }
 
         private void btnExport_Click_1(object sender, EventArgs e)
@@ -216,6 +248,11 @@ namespace LPSolver
 
                 }
             }
+        }
+
+        private void rtbPreview_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
