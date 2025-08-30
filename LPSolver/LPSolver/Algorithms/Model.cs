@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LPSolver
+namespace LPSolver.Algorithms
 {
    public class LinearStorage
     {
@@ -30,21 +30,7 @@ namespace LPSolver
 
     }
 
-    public class CanonicalForm
-    {
-       
-
-        public CanonicalForm()
-        {
-            
-
-           
-            
-        }
-       
-
-
-    }
+  
     public class CanonicalConstraint
     {
         public double[] Coefiecients { get; set; }

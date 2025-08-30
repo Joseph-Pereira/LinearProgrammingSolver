@@ -50,8 +50,8 @@
     <Compile Include="HomeForm.Designer.cs">
       <DependentUpon>HomeForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="InputParser.cs" />
-    <Compile Include="Model.cs" />
+    <Compile Include="Algorithms\InputParser.cs" />
+    <Compile Include="Algorithms\Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ResultForm.cs">
       <SubType>Form</SubType>
