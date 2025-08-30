@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LPSolver.Algorithms
 {
@@ -18,7 +17,7 @@ namespace LPSolver.Algorithms
             var primal = new PrimalSimplex();
             primal.SolveFromTable(canonical.Table);
             Iterations.AddRange(primal.Iterations);
-            var table = Iterations.Last();
+            var table = CloneTable(Iterations.Last()); // Work with a copy to avoid modifying original
 
             while (true)
             {
@@ -26,13 +25,46 @@ namespace LPSolver.Algorithms
 
                 int sourceRow = ChooseSourceRow(table);
                 AddCut(table, sourceRow);
-                Iterations.Add(CloneTable(table)); // Table after adding cut
+                Iterations.Add(CloneTable(table)); // Capture state after adding cut
 
                 var dual = new DualSimplex();
-                dual.SolveFromTable(table);
+                var dualTable = CloneTable(table); // Pass a copy to DualSimplex
+                dual.SolveFromTable(dualTable);
                 Iterations.AddRange(dual.Iterations.Skip(1));
 
-                table = Iterations.Last();
+                table = CloneTable(Iterations.Last()); // Update table with the latest state
+            }
+
+            // Write iterations and solution to file
+            string filePath = "CuttingPlaneSolution.txt";
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                writer.WriteLine("Cutting Plane Algorithm Iterations:");
+                for (int i = 0; i < Iterations.Count; i++)
+                {
+                    writer.WriteLine($"\nIteration {i}:");
+                    PrintTableToFile(writer, Iterations[i]);
+                }
+
+                // Extract and display the final solution
+                var finalTable = Iterations.Last();
+                double z = -finalTable[0]["RHS"]; // Since obj row has negative coeffs
+                Dictionary<string, double> solution = new Dictionary<string, double>();
+                for (int row = 1; row < finalTable.Count; row++)
+                {
+                    string basicVar = GetBasicVar(finalTable, row);
+                    if (basicVar.StartsWith("x"))
+                    {
+                        solution[basicVar] = finalTable[row]["RHS"];
+                    }
+                }
+
+                writer.WriteLine("\nFinal Solution:");
+                foreach (var kv in solution)
+                {
+                    writer.WriteLine($"{kv.Key} = {kv.Value}");
+                }
+                writer.WriteLine($"Optimal Z = {z}");
             }
         }
 
@@ -75,25 +107,30 @@ namespace LPSolver.Algorithms
         private void AddCut(List<Dictionary<string, double>> table, int sourceRow)
         {
             cutCount++;
-            string newSlack = $"g{cutCount}";
+            string newSlack = $"c{cutCount}";
             double rhs = table[sourceRow]["RHS"];
             double f0 = rhs - Math.Floor(rhs);
 
             var newRow = new Dictionary<string, double>();
-            foreach (var key in table[0].Keys.Where(k => k != "RHS"))
+            var originalKeys = table[0].Keys.Where(k => k != "RHS").ToList(); // Get all keys except RHS
+
+            // Populate new row with fractional parts for original variables
+            foreach (var key in originalKeys)
             {
                 double a = table[sourceRow][key];
                 double f = a - Math.Floor(a);
                 newRow[key] = -f;
             }
-            newRow[newSlack] = 1.0;
-            newRow["RHS"] = -f0;
+            newRow[newSlack] = 1.0; // Set the new slack variable coefficient
+            newRow["RHS"] = -f0;    // Set the RHS value for the new row
 
-            for (int i = 0; i < table.Count; i++)
+            // Add the new slack variable to all existing rows, initializing to 0
+            foreach (var row in table)
             {
-                table[i][newSlack] = 0.0;
+                row[newSlack] = 0.0;
             }
 
+            // Add the new row at the bottom
             table.Add(newRow);
         }
 
@@ -120,7 +157,37 @@ namespace LPSolver.Algorithms
 
         private List<Dictionary<string, double>> CloneTable(List<Dictionary<string, double>> table)
         {
+            // Create a deep copy of the table list and its dictionaries
             return table.Select(r => new Dictionary<string, double>(r)).ToList();
         }
+
+        private void PrintTableToFile(StreamWriter writer, List<Dictionary<string, double>> table)
+        {
+            if (table.Count == 0) return;
+
+            // Separate original variables, new slack variables, and RHS
+            var originalKeys = table[0].Keys.Where(k => k != "RHS" && !k.StartsWith("c")).OrderBy(k => k).ToList();
+            var newSlackKeys = table[0].Keys.Where(k => k.StartsWith("c")).OrderBy(k => k).ToList();
+            var allKeys = originalKeys.Concat(newSlackKeys).Concat(new[] { "RHS" }).ToList(); // New slacks before RHS
+
+            // Print header
+            foreach (var key in allKeys)
+            {
+                writer.Write($"{key,-8}");
+            }
+            writer.WriteLine();
+
+            // Print rows with proper formatting and alignment
+            foreach (var row in table)
+            {
+                foreach (var key in allKeys)
+                {
+                    double val = row.ContainsKey(key) ? row[key] : 0;
+                    writer.Write($"{val:F2}".PadLeft(8));
+                }
+                writer.WriteLine();
+            }
+        }
     }
+
 }
