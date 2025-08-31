@@ -34,6 +34,7 @@ namespace LPSolver
             cmbAlgo.Items.Clear();
             cmbAlgo.Items.Add("Primal Simplex");
             cmbAlgo.Items.Add("Dual Simplex");
+            cmbAlgo.Items.Add("Revise Simplex");
             cmbAlgo.Items.Add("Branch & Bound (General ILP)");
             cmbAlgo.Items.Add("Branch & Bound (Knapsack)");
             cmbAlgo.Items.Add("Cutting Plane");
@@ -191,7 +192,7 @@ namespace LPSolver
                             ksolver.OptimalSolution
                                    .OrderBy(kv => kv.Key)
                                    .Select(kv => $"x{kv.Key}={kv.Value}")) + "\n");
-                    rtbResults.AppendText("Branch tree saved as knapsack_branches.csv (application folder).\n");
+                 
 
                     _finalTableau = null;
                     btnSensitivity.Enabled = false;
