@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -204,7 +205,10 @@ namespace LPSolver.Algorithms
                     csv.AppendLine($"{node.Id},{node.ParentId},{node.Depth},\"{node.SolutionString}\",{node.CurrentValue},{node.RemainingCapacity},{node.UpperBound},{(node.FractionalItemIndex != -1 ? $"x{node.FractionalItemIndex}" : "")},{node.Status},{BestValue}");
                 }
 
-                //File.WriteAllText(filePath, csv.ToString());
+
+                File.WriteAllText(filePath, csv.ToString());
+
+
             }
         }
 

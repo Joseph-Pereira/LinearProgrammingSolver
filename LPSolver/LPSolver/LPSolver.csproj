@@ -44,20 +44,20 @@
     <Compile Include="Algorithms\KnapsackBnB.cs" />
     <Compile Include="Algorithms\PrimalSimplex.cs" />
     <Compile Include="Algorithms\RevisedSimplex.cs" />
-    <Compile Include="HomeForm.cs">
+    <Compile Include="Analysis\SensitivityAnalyzer.cs" />
+    <Compile Include="HomePage.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="HomeForm.Designer.cs">
-      <DependentUpon>HomeForm.cs</DependentUpon>
+    <Compile Include="HomePage.Designer.cs">
+      <DependentUpon>HomePage.cs</DependentUpon>
     </Compile>
     <Compile Include="Algorithms\InputParser.cs" />
     <Compile Include="Algorithms\Model.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="ResultForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ResultForm.Designer.cs">
-      <DependentUpon>ResultForm.cs</DependentUpon>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -76,8 +76,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="HomeForm.resx">
-      <DependentUpon>HomeForm.cs</DependentUpon>
+    <EmbeddedResource Include="HomePage.resx">
+      <DependentUpon>HomePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -211,13 +211,15 @@ namespace LPSolver.Algorithms
                     conRows[$"s{i + 1}"] = 1;
                     conRows["RHS"] = Const.RHS;
                 }
+
                 if (Const.Sign == ">=")
                 {
                     for (int j = 0; j < Varnum; j++)
-                        conRows[$"x{j + 1}"] = -Const.Coefficients[j]; // negate original variables
-                    conRows[$"e{i + 1}"] = 1;                         // surplus variable
+                        conRows[$"x{j + 1}"] = -Const.Coefficients[j]; 
+                    conRows[$"e{i + 1}"] = 1;                       
                     conRows["RHS"] = -Const.RHS;
                 }
+
 
                 Table.Add(conRows);
             }
@@ -255,13 +257,15 @@ namespace LPSolver.Algorithms
             }
 
 
+
             if (canonical.Table[0].Where(kv => kv.Key.StartsWith("x")).Any(kv => kv.Value < 0))
             {
+
                 var primal = new PrimalSimplex();
                 primal.SolveFromTable(canonical.Table);
-                foreach (var it in primal.Iterations.Skip(1))
-                    Iterations.Add(CloneTable(it));
-            }
+            foreach (var it in primal.Iterations.Skip(1))
+                Iterations.Add(CloneTable(it));
+        }
         }
 
         private List<Dictionary<string, double>> CloneTable(List<Dictionary<string, double>> table)
@@ -328,6 +332,35 @@ namespace LPSolver.Algorithms
                 table[pivotRowIndex][key] = originalPivotRow[key] / pivotElement;
             }
         }
+
+        //Added another method for the cutting plane
+        public void SolveFromTable(List<Dictionary<string, double>> table)
+        {
+            Iterations.Add(CloneTable(table));
+
+            while (true)
+            {
+                int pivotRowIndex = FindPivotRow(table);
+                if (pivotRowIndex == -1) break;
+
+                string pivotCol = FindPivotColumn(table, pivotRowIndex);
+                if (pivotCol == null) throw new InvalidOperationException("Infeasible (dual simplex cannot continue)");
+
+                PivotTable(table, pivotRowIndex, pivotCol);
+
+                Iterations.Add(CloneTable(table));
+            }
+
+            if (table[0].Any(kv => kv.Key != "RHS" && kv.Value < 0))
+            {
+                var primal = new PrimalSimplex();
+                primal.SolveFromTable(table);
+                foreach (var it in primal.Iterations.Skip(1))
+                    Iterations.Add(CloneTable(it));
+            }
+        }
+
+
     }
 
 

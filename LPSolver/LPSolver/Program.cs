@@ -2,6 +2,8 @@
 using LPSolver.Algorithms;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -16,24 +18,16 @@ namespace LPSolver
         [STAThread]
         static void Main()
         {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
             Application.Run(new HomeForm());
 
             try
             {
-                // Example: pass file path via args or hardcode for testing
-                string filePath = @"C:\School\Third year\LPR381\Project\Inputs\max  +5 +2.txt";
 
-                Console.WriteLine($"Parsing input file: {filePath}");
-                var storage = InputParser.Parse(filePath);
-
-                Console.WriteLine("\n=== DUAL SIMPLEX ===");
-                var dual = new DualSimplex();
-                dual.Solve(storage);
-                PrintIterations(dual.Iterations);
 
                 Console.WriteLine("\n=== FINAL SOLUTION ===");
                 PrintOptimal(dual.Iterations.Last(), storage.IsMaximization);
@@ -89,6 +83,37 @@ namespace LPSolver
             }
         }
     }
+
+
+
+        //Testing the cutting plane:
+        //static void TestCuttingPlaneAndSaveToFile()
+        //{
+        //    // Set up the problem from the slides
+        //    var storage = new LinearStorage
+        //    {
+        //        ObjectiveCoefficients = new double[] { 8, 5 } // Max 8x1 + 5x2
+        //    };
+
+        //    storage.Constraints.Add(new Constraint
+        //    {
+        //        Coefficients = new double[] { 1, 1 },
+        //        Sign = "<=",
+        //        RHS = 6
+        //    });
+
+        //    storage.Constraints.Add(new Constraint
+        //    {
+        //        Coefficients = new double[] { 9, 5 },
+        //        Sign = "<=",
+        //        RHS = 45
+        //    });
+
+        //    var cutter = new CuttingPlane();
+        //    cutter.Solve(storage);
+
+        //    Console.WriteLine("Solution has been saved to CuttingPlaneSolution.txt");
+        //}
 
 
 
