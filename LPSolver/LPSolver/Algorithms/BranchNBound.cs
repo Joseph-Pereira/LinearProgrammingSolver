@@ -286,12 +286,6 @@ namespace LPSolver.Algorithms
         }
     }
 
-    // Assume Constraint class 
-    public class Constraint
-    {
-        public double[] Coefficients { get; set; }
-        public string Sign { get; set; }
-        public double RHS { get; set; }
-    }
+   
 }
 
