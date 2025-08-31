@@ -170,29 +170,35 @@ namespace LPSolver
         }
                 else if (algo == "Branch & Bound (Knapsack)")
                 {
-                    var items = new List<LPSolver.Algorithms.KnapsackBnB.Variable>
-                        {
-                            new LPSolver.Algorithms.KnapsackBnB.Variable(1, 2, 11),
-                            new LPSolver.Algorithms.KnapsackBnB.Variable(2, 3, 8),
-                            new LPSolver.Algorithms.KnapsackBnB.Variable(3, 3, 6),
-                            new LPSolver.Algorithms.KnapsackBnB.Variable(4, 5, 14),
-                            new LPSolver.Algorithms.KnapsackBnB.Variable(5, 2, 10),
-                            new LPSolver.Algorithms.KnapsackBnB.Variable(6, 4, 10),
-                        };
-                    double capacity = 40;
+                    var (items, capacity) = LoadKnapsackFromFile(txtFile.Text);
 
-                    var solver = new LPSolver.Algorithms.KnapsackBnB.KnapsackSolver();
-                    solver.Solve(items, capacity);
+                    if (items.Count == 0 || capacity <= 0)
+                    {
+                        rtbResults.AppendText("Invalid knapsack input file format.\n");
+                        btnSensitivity.Enabled = false;
+                        btnExport.Enabled = false;
+                        return;
+                    }
 
-                    rtbResults.AppendText($"Optimal Value: {solver.OptimalValue}\n");
+                    var ksolver = new LPSolver.Algorithms.KnapsackBnB.KnapsackSolver();
+                    ksolver.Solve(items, capacity);
+
+                    rtbResults.AppendText("=== 0/1 Knapsack (Branch & Bound) ===\n");
+                    rtbResults.AppendText($"Capacity: {capacity:0.###}\n");
+                    rtbResults.AppendText($"Optimal Value: {ksolver.OptimalValue:0.###}\n");
                     rtbResults.AppendText("Optimal Solution: " +
-                        string.Join(", ", solver.OptimalSolution.OrderBy(kv => kv.Key)
-                            .Select(kv => $"x{kv.Key}={kv.Value}")) + Environment.NewLine);
+                        string.Join(", ",
+                            ksolver.OptimalSolution
+                                   .OrderBy(kv => kv.Key)
+                                   .Select(kv => $"x{kv.Key}={kv.Value}")) + "\n");
+                    rtbResults.AppendText("Branch tree saved as knapsack_branches.csv (application folder).\n");
 
+                    _finalTableau = null;
                     btnSensitivity.Enabled = false;
                     btnExport.Enabled = true;
                     return;
                 }
+
 
 
                 // === Print ALL iteration tableaux for Simplex ===
@@ -283,6 +289,40 @@ namespace LPSolver
                 }
             }
         }
+        private (List<LPSolver.Algorithms.KnapsackBnB.Variable> items, double capacity)
+    LoadKnapsackFromFile(string path)
+        {
+            var items = new List<LPSolver.Algorithms.KnapsackBnB.Variable>();
+            double capacity = 0;
+
+            foreach (var raw in File.ReadAllLines(path))
+            {
+                var line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#")) continue;
+
+                if (line.StartsWith("capacity", StringComparison.OrdinalIgnoreCase))
+                {
+                    var parts = line.Split('=');
+                    if (parts.Length == 2 && double.TryParse(parts[1], out double cap))
+                        capacity = cap;
+                    continue;
+                }
+
+                var tokens = line.Split(new[] { ' ', '\t', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                if (tokens.Length >= 3)
+                {
+                    if (int.TryParse(tokens[0], out int idx) &&
+                        double.TryParse(tokens[1], out double val) &&
+                        double.TryParse(tokens[2], out double wt))
+                    {
+                        items.Add(new LPSolver.Algorithms.KnapsackBnB.Variable(idx, val, wt));
+                    }
+                }
+            }
+
+            return (items, capacity);
+        }
+
 
         private void rtbPreview_TextChanged(object sender, EventArgs e)
         {
