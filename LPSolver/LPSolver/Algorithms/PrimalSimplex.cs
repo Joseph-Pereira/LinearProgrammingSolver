@@ -326,6 +326,35 @@ namespace LPSolver.Algorithms
                 table[pivotRowIndex][key] = originalPivotRow[key] / pivotElement;
             }
         }
+
+        //Added another method for the cutting plane
+        public void SolveFromTable(List<Dictionary<string, double>> table)
+        {
+            Iterations.Add(CloneTable(table));
+
+            while (true)
+            {
+                int pivotRowIndex = FindPivotRow(table);
+                if (pivotRowIndex == -1) break;
+
+                string pivotCol = FindPivotColumn(table, pivotRowIndex);
+                if (pivotCol == null) throw new InvalidOperationException("Infeasible (dual simplex cannot continue)");
+
+                PivotTable(table, pivotRowIndex, pivotCol);
+
+                Iterations.Add(CloneTable(table));
+            }
+
+            if (table[0].Any(kv => kv.Key != "RHS" && kv.Value < 0))
+            {
+                var primal = new PrimalSimplex();
+                primal.SolveFromTable(table);
+                foreach (var it in primal.Iterations.Skip(1))
+                    Iterations.Add(CloneTable(it));
+            }
+        }
+
+
     }
 
 

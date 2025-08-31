@@ -2,6 +2,7 @@
 using LPSolver.Algorithms;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -16,7 +17,7 @@ namespace LPSolver
         [STAThread]
         static void Main()
         {
-
+            //TestCuttingPlaneAndSaveToFile(); // this method is just to test the cutting plane (use as template for how to call the function)
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new HomeForm());
@@ -51,8 +52,34 @@ namespace LPSolver
             Console.WriteLine("Done.");
         }
 
-       
+        //Testing the cutting plane:
+        //static void TestCuttingPlaneAndSaveToFile()
+        //{
+        //    // Set up the problem from the slides
+        //    var storage = new LinearStorage
+        //    {
+        //        ObjectiveCoefficients = new double[] { 8, 5 } // Max 8x1 + 5x2
+        //    };
 
+        //    storage.Constraints.Add(new Constraint
+        //    {
+        //        Coefficients = new double[] { 1, 1 },
+        //        Sign = "<=",
+        //        RHS = 6
+        //    });
+
+        //    storage.Constraints.Add(new Constraint
+        //    {
+        //        Coefficients = new double[] { 9, 5 },
+        //        Sign = "<=",
+        //        RHS = 45
+        //    });
+
+        //    var cutter = new CuttingPlane();
+        //    cutter.Solve(storage);
+
+        //    Console.WriteLine("Solution has been saved to CuttingPlaneSolution.txt");
+        //}
 
     }
 
