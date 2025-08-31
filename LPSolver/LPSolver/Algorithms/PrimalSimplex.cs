@@ -211,13 +211,15 @@ namespace LPSolver.Algorithms
                     conRows[$"s{i + 1}"] = 1;
                     conRows["RHS"] = Const.RHS;
                 }
-                 if (Const.Sign == ">=")
-                 {
-                     for (int j = 0; j < Varnum; j++)
-                         conRows[$"x{j + 1}"] = -Const.Coefficients[j];
-                     conRows[$"e{i + 1}"] = 1;                        
-                     conRows["RHS"] = -Const.RHS;
- }
+
+                if (Const.Sign == ">=")
+                {
+                    for (int j = 0; j < Varnum; j++)
+                        conRows[$"x{j + 1}"] = -Const.Coefficients[j]; 
+                    conRows[$"e{i + 1}"] = 1;                       
+                    conRows["RHS"] = -Const.RHS;
+                }
+
 
                 Table.Add(conRows);
             }
@@ -254,9 +256,11 @@ namespace LPSolver.Algorithms
                 Iterations.Add(CloneTable(canonical.Table));
             }
 
-          
-          if (canonical.Table[0].Where(kv => kv.Key.StartsWith("x")).Any(kv => kv.Value < 0))
-        {
+
+
+            if (canonical.Table[0].Where(kv => kv.Key.StartsWith("x")).Any(kv => kv.Value < 0))
+            {
+
                 var primal = new PrimalSimplex();
                 primal.SolveFromTable(canonical.Table);
             foreach (var it in primal.Iterations.Skip(1))

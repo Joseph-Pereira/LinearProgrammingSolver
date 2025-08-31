@@ -51,8 +51,8 @@
     <Compile Include="HomePage.Designer.cs">
       <DependentUpon>HomePage.cs</DependentUpon>
     </Compile>
-    <Compile Include="InputParser.cs" />
-    <Compile Include="Model.cs" />
+    <Compile Include="Algorithms\InputParser.cs" />
+    <Compile Include="Algorithms\Model.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

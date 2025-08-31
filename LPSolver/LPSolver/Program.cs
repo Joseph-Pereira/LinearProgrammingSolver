@@ -25,35 +25,66 @@ namespace LPSolver
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new HomeForm());
 
-
-
-            string filePath = @"C:\Users\ferre\OneDrive - belgiumcampus.ac.za\LPR381\Project\LinearProgrammingSolver\LPSolver\LPSolver\InputFiles\Ex1.txt";
-
-            var storage = InputParser.Parse(filePath);
-
-            var solver = new DualSimplex();
-
-            solver.Solve(storage);
-
-            int iterationNumber = 0;
-            foreach (var iteration in solver.Iterations)
+            try
             {
-                Console.WriteLine($"Iteration {iterationNumber++}:");
 
-                foreach (var row in iteration)
-                {
-                    foreach (var kvp in row)
-                    {
-                        Console.Write($"{kvp.Key}:{kvp.Value,8:F2} ");
-                    }
-                    Console.WriteLine();
-                }
 
-                Console.WriteLine(new string('-', 50));
+                Console.WriteLine("\n=== FINAL SOLUTION ===");
+                PrintOptimal(dual.Iterations.Last(), storage.IsMaximization);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] {ex.Message}");
             }
 
-            Console.WriteLine("Done.");
+
         }
+        private static void PrintIterations(List<List<Dictionary<string, double>>> iterations)
+        {
+            for (int i = 0; i < iterations.Count; i++)
+            {
+                Console.WriteLine($"\n--- Iteration {i} ---");
+                PrintTable(iterations[i]);
+            }
+        }
+
+        private static void PrintTable(List<Dictionary<string, double>> table)
+        {
+            var headers = table[0].Keys.ToList();
+            Console.WriteLine(string.Join("\t", headers));
+
+            foreach (var row in table)
+            {
+                Console.WriteLine(string.Join("\t", headers.Select(h => row[h].ToString("0.###"))));
+            }
+        }
+
+        private static void PrintOptimal(List<Dictionary<string, double>> table, bool isMax)
+        {
+            Console.WriteLine("\nOptimal Solution:");
+            var objRow = table[0];
+            double z = objRow["RHS"];
+            Console.WriteLine($"Objective Value (Z) = {z} ({(isMax ? "Max" : "Min")})");
+
+            foreach (var key in objRow.Keys.Where(k => k.StartsWith("x")))
+            {
+                double value = 0;
+                // look for row where variable = 1
+                for (int i = 1; i < table.Count; i++)
+                {
+                    if (Math.Abs(table[i][key] - 1) < 1e-9 &&
+                        table[i].Count(kv => Math.Abs(kv.Value) > 1e-9) == 2) // only itself + RHS
+                    {
+                        value = table[i]["RHS"];
+                        break;
+                    }
+                }
+                Console.WriteLine($"{key} = {value}");
+            }
+        }
+    }
+
+
 
         //Testing the cutting plane:
         //static void TestCuttingPlaneAndSaveToFile()
@@ -84,7 +115,9 @@ namespace LPSolver
         //    Console.WriteLine("Solution has been saved to CuttingPlaneSolution.txt");
         //}
 
-    }
+
+
+
 
 
 }

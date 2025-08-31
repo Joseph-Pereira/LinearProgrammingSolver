@@ -205,7 +205,10 @@ namespace LPSolver.Algorithms
                     csv.AppendLine($"{node.Id},{node.ParentId},{node.Depth},\"{node.SolutionString}\",{node.CurrentValue},{node.RemainingCapacity},{node.UpperBound},{(node.FractionalItemIndex != -1 ? $"x{node.FractionalItemIndex}" : "")},{node.Status},{BestValue}");
                 }
 
+
                 File.WriteAllText(filePath, csv.ToString());
+
+
             }
         }
 
