@@ -34,6 +34,7 @@ namespace LPSolver
             cmbAlgo.Items.Clear();
             cmbAlgo.Items.Add("Primal Simplex");
             cmbAlgo.Items.Add("Dual Simplex");
+            cmbAlgo.Items.Add("Branch & Bound (General ILP)");
             cmbAlgo.Items.Add("Branch & Bound (Knapsack)");
             cmbAlgo.Items.Add("Cutting Plane");
             cmbAlgo.SelectedIndex = 0;
@@ -94,50 +95,90 @@ namespace LPSolver
 
 
 
-        private void btnRun_Click_1(object sender, EventArgs e)
+       private void btnRun_Click_1(object sender, EventArgs e)
+{
+    if (string.IsNullOrWhiteSpace(txtFile.Text) || !File.Exists(txtFile.Text))
+    {
+        MessageBox.Show("Please select a valid input file first.");
+        return;
+    }
+
+    rtbResults.Clear();
+    string algo = cmbAlgo.SelectedItem?.ToString() ?? "Primal Simplex";
+
+    try
+    {
+        // Parse LP/IP model and remember it for sensitivity (LP only)
+        var model = InputParser.Parse(txtFile.Text);
+        _lastModel = model;
+
+        List<List<Dictionary<string, double>>> allIterations = null;
+
+        if (algo == "Primal Simplex")
         {
-            if (string.IsNullOrWhiteSpace(txtFile.Text) || !File.Exists(txtFile.Text))
+            var solver = new LPSolver.Algorithms.PrimalSimplex();
+            solver.Solve(model);
+            allIterations = solver.Iterations;
+        }
+        else if (algo == "Dual Simplex")
+        {
+            var solver = new LPSolver.Algorithms.DualSimplex();
+            solver.Solve(model);
+            allIterations = solver.Iterations;
+        }
+        else if (algo == "Cutting Plane")
+        {
+            var cp = new LPSolver.Algorithms.CuttingPlane();
+            cp.Solve(model);
+            var cpIters = cp.Iterations;
+
+            if (cpIters != null && cpIters.Count > 0)
             {
-                MessageBox.Show("Please select a valid input file first.");
-                return;
+                for (int k = 0; k < cpIters.Count; k++)
+                {
+                    var T = cpIters[k];
+                    string title = (k == cpIters.Count - 1)
+                        ? $"Cutting Plane – Iteration {k} (Final)"
+                        : $"Cutting Plane – Iteration {k}";
+                    PrintTableau(T, title);
+                }
+                _finalTableau = cpIters.Last();
+                btnSensitivity.Enabled = false;        // integer after cuts -> no LP sensitivity
+                btnExport.Enabled = true;
             }
-
-            rtbResults.Clear();
-            string algo = cmbAlgo.SelectedItem?.ToString() ?? "Primal Simplex";
-
-            try
+            else
             {
-                // Parse model from file
-                var model = InputParser.Parse(txtFile.Text);
-                _lastModel = model;
+                rtbResults.AppendText("Cutting Plane produced no iterations." + Environment.NewLine);
+                btnSensitivity.Enabled = false;
+                btnExport.Enabled = false;
+            }
+            return;
+        }
+        else if (algo == "Branch & Bound (General ILP)")
+        {
+            // Uses your BranchAndBound class (dual simplex subproblems)
+            var bb = new LPSolver.Algorithms.BranchAndBound();
+            bb.Solve(model);   // prints canonical root + all subproblem iterations + best solution
 
-                List<List<Dictionary<string, double>>> allIterations = null;
+            foreach (var line in bb.Output)
+                rtbResults.AppendText(line + Environment.NewLine);
 
-                // === Choose algorithm ===
-                if (algo == "Primal Simplex")
-                {
-                    var solver = new LPSolver.Algorithms.PrimalSimplex();
-                    solver.Solve(model);
-                    allIterations = solver.Iterations; // <-- all tables
-                }
-                else if (algo == "Dual Simplex")
-                {
-                    var solver = new LPSolver.Algorithms.DualSimplex();
-                    solver.Solve(model);
-                    allIterations = solver.Iterations; // <-- all tables
-                }
+            _finalTableau = null;               // not an LP basis at the end
+            btnSensitivity.Enabled = false;     // sensitivity not applicable for ILP
+            btnExport.Enabled = true;
+            return;
+        }
                 else if (algo == "Branch & Bound (Knapsack)")
                 {
-                    // (No tableaux here—keep your current knapsack output)
                     var items = new List<LPSolver.Algorithms.KnapsackBnB.Variable>
-            {
-                new LPSolver.Algorithms.KnapsackBnB.Variable(1, 2, 11),
-                new LPSolver.Algorithms.KnapsackBnB.Variable(2, 3, 8),
-                new LPSolver.Algorithms.KnapsackBnB.Variable(3, 3, 6),
-                new LPSolver.Algorithms.KnapsackBnB.Variable(4, 5, 14),
-                new LPSolver.Algorithms.KnapsackBnB.Variable(5, 2, 10),
-                new LPSolver.Algorithms.KnapsackBnB.Variable(6, 4, 10),
-            };
+                        {
+                            new LPSolver.Algorithms.KnapsackBnB.Variable(1, 2, 11),
+                            new LPSolver.Algorithms.KnapsackBnB.Variable(2, 3, 8),
+                            new LPSolver.Algorithms.KnapsackBnB.Variable(3, 3, 6),
+                            new LPSolver.Algorithms.KnapsackBnB.Variable(4, 5, 14),
+                            new LPSolver.Algorithms.KnapsackBnB.Variable(5, 2, 10),
+                            new LPSolver.Algorithms.KnapsackBnB.Variable(6, 4, 10),
+                        };
                     double capacity = 40;
 
                     var solver = new LPSolver.Algorithms.KnapsackBnB.KnapsackSolver();
@@ -146,51 +187,45 @@ namespace LPSolver
                     rtbResults.AppendText($"Optimal Value: {solver.OptimalValue}\n");
                     rtbResults.AppendText("Optimal Solution: " +
                         string.Join(", ", solver.OptimalSolution.OrderBy(kv => kv.Key)
-                            .Select(kv => $"x{kv.Key}={kv.Value}")));
-                    btnSensitivity.Enabled = false; // no simplex tableau for sensitivity here
+                            .Select(kv => $"x{kv.Key}={kv.Value}")) + Environment.NewLine);
+
+                    btnSensitivity.Enabled = false;
                     btnExport.Enabled = true;
                     return;
                 }
-                else if (algo == "Cutting Plane")
-                {
-                    rtbResults.AppendText("Cutting Plane not yet implemented.");
-                    btnSensitivity.Enabled = false;
-                    btnExport.Enabled = false;
-                    return;
-                }
 
-                // === Print ALL iteration tableaux ===
+
+                // === Print ALL iteration tableaux for Simplex ===
                 if (allIterations != null && allIterations.Count > 0)
-                {
-                    for (int k = 0; k < allIterations.Count; k++)
-                    {
-                        var T = allIterations[k];
-                        string title = (k == allIterations.Count - 1)
-                            ? $"Iteration {k} (Final)"
-                            : $"Iteration {k}";
-                        PrintTableau(T, title);
-                    }
-
-                    // Keep final tableau for sensitivity/export (last iteration)
-                    _finalTableau = allIterations.Last();
-                    btnSensitivity.Enabled = true;
-                    btnExport.Enabled = true;
-                }
-                else
-                {
-                    rtbResults.AppendText("No iterations to display.");
-                    btnSensitivity.Enabled = false;
-                    btnExport.Enabled = false;
-                }
-            }
-            catch (Exception ex)
+        {
+            for (int k = 0; k < allIterations.Count; k++)
             {
-                rtbResults.Text = "[ERROR] " + ex.Message;
-                MessageBox.Show(ex.Message, "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var T = allIterations[k];
+                string title = (k == allIterations.Count - 1)
+                    ? $"Iteration {k} (Final)"
+                    : $"Iteration {k}";
+                PrintTableau(T, title);
             }
 
-
+            _finalTableau = allIterations.Last(); // for LP sensitivity / export
+            btnSensitivity.Enabled = true;
+            btnExport.Enabled = true;
         }
+        else
+        {
+            rtbResults.AppendText("No iterations to display.");
+            btnSensitivity.Enabled = false;
+            btnExport.Enabled = false;
+        }
+    }
+    catch (Exception ex)
+    {
+        rtbResults.Text = "[ERROR] " + ex.Message;
+        MessageBox.Show(ex.Message, "Unexpected error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
+
+
 
         private void btnSensitivity_Click_1(object sender, EventArgs e)
         {

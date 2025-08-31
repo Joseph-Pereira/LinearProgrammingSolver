@@ -2,6 +2,7 @@
 using LPSolver.Algorithms;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -17,7 +18,9 @@ namespace LPSolver
         [STAThread]
         static void Main()
         {
-            //TestCuttingPlaneAndSaveToFile(); // this method is just to test the cutting plane (use as template for how to call the function)
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new HomeForm());
