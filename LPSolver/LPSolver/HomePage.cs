@@ -202,34 +202,33 @@ namespace LPSolver
 
             var report = LPSolver.Analysis.SensitivityAnalyzer.Run(_finalTableau, _lastModel);
 
-            // Append to results box
             rtbResults.AppendText(Environment.NewLine + "=== Sensitivity & Duality ===" + Environment.NewLine);
 
-            // Dual prices
-            rtbResults.AppendText("Dual prices (y): " +
-                "[" + string.Join(", ", report.DualPrices.Select(v => v.ToString("0.000"))) + "]" + Environment.NewLine);
+            // 1) Shadow prices
+            rtbResults.AppendText(
+                LPSolver.Analysis.SensitivityAnalyzer.BuildShadowPricesText(report));
 
-            // Reduced costs
-            rtbResults.AppendText("Reduced costs:" + Environment.NewLine);
-            foreach (var kv in report.ReducedCosts)
-                rtbResults.AppendText($"  {kv.Key}: {kv.Value:0.000}{Environment.NewLine}");
+            // 2) Reduced costs (pass number of decision variables)
+            rtbResults.AppendText(
+                LPSolver.Analysis.SensitivityAnalyzer.BuildReducedCostsText(
+                    report, _lastModel.ObjectiveCoefficients.Length));
 
-            // RHS ranges
-            rtbResults.AppendText("RHS ranges:" + Environment.NewLine);
-            foreach (var kv in report.RhsRanges)
-            {
-                string lo = kv.Value.Down.HasValue ? kv.Value.Down.Value.ToString("0.000") : "-inf";
-                string hi = kv.Value.Up.HasValue ? kv.Value.Up.Value.ToString("0.000") : "+inf";
-                rtbResults.AppendText($"  {kv.Key}: [{lo} , {hi}]{Environment.NewLine}");
-            }
+            // 3) Objective coefficient ranges (for BASIC vars)
+            rtbResults.AppendText(
+                LPSolver.Analysis.SensitivityAnalyzer.BuildObjectiveRangesText(report));
 
+            // 4) RHS feasibility ranges
+            rtbResults.AppendText(
+                LPSolver.Analysis.SensitivityAnalyzer.BuildRhsRangesText(report));
 
-            // Strong duality check
+            // 5) Strong duality check
             double diff = Math.Abs(report.ZStar - report.bTy);
-            rtbResults.AppendText($"Strong duality: z*={report.ZStar:0.000}, b^T y={report.bTy:0.000}, diff={diff:0.000}" + Environment.NewLine);
-
-
+            rtbResults.AppendText(
+                "Strong duality: z*=" + report.ZStar.ToString("0.000") +
+                ", b^T y=" + report.bTy.ToString("0.000") +
+                ", |diff|=" + diff.ToString("0.000") + Environment.NewLine);
         }
+
 
         private void btnExport_Click_1(object sender, EventArgs e)
         {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using LPSolver;   
+using LPSolver;             // for LinearStorage
 
 namespace LPSolver.Analysis
 {
@@ -17,11 +17,11 @@ namespace LPSolver.Analysis
 
     public sealed class SensitivityReport
     {
-        public double[] DualPrices { get; set; }                           // y
+        public double[] DualPrices { get; set; }                           // y (shadow prices)
         public Dictionary<string, double> ReducedCosts { get; set; }       // r_j
-        public Dictionary<string, Range> RhsRanges { get; set; }           // Δb ranges (feasibility)
-        public Dictionary<string, Range> CjRangesBasic { get; set; }       // Δc ranges for current basic vars
-        public string[] BasisNames { get; set; }                           // names of basic columns
+        public Dictionary<string, Range> RhsRanges { get; set; }           // Δb feasibility ranges
+        public Dictionary<string, Range> CjRangesBasic { get; set; }       // Δc ranges for BASIC vars
+        public string[] BasisNames { get; set; }                           // basic column names
         public double ZStar { get; set; }
         public double bTy { get; set; }
 
@@ -38,38 +38,35 @@ namespace LPSolver.Analysis
     public static class SensitivityAnalyzer
     {
         /// <summary>
-        /// Expects the FINAL simplex tableau:
-        /// table[0] = objective row with -c_j (for Max) and RHS = z*.
-        /// table[1..m] = constraint rows; each row has columns for all variables and "RHS".
-        /// Columns keys are variable names; "RHS" is the right-hand side.
+        /// Compute dual prices, reduced costs, RHS ranges, and Δc ranges for BASIC vars,
+        /// using the final simplex tableau *and the original model coefficients*.
         /// </summary>
         public static SensitivityReport Run(List<Dictionary<string, double>> table, LinearStorage model)
         {
             if (table == null || table.Count < 2)
                 throw new ArgumentException("Invalid final tableau.");
 
-            // --- collect column names (excluding RHS) ---
+            // ----- columns (exclude RHS) -----
             var colNames = new List<string>();
             foreach (var k in table[0].Keys)
                 if (k != "RHS") colNames.Add(k);
 
-            int m = table.Count - 1;
-            int n = colNames.Count;
+            int m = table.Count - 1;       // constraints
+            int n = colNames.Count;        // all columns except RHS
 
-            // --- build c from the MODEL (not from row 0) ---
-            // decision vars expected as x1..xn; slack/artificial/e/a/etc. get cost 0
+            // ----- c from MODEL (not from row 0!) -----
+            // decision vars are x1..xn; other columns (slack/artificial) get cost 0
             double[] cFromModel = new double[n];
             for (int j = 0; j < n; j++)
             {
                 string name = colNames[j];
                 double cj = 0.0;
-
                 if (name.Length >= 2 && (name[0] == 'x' || name[0] == 'X'))
                 {
                     int idx;
                     if (int.TryParse(name.Substring(1), out idx) &&
-                        idx >= 1 && model.ObjectiveCoefficients != null &&
-                        idx <= model.ObjectiveCoefficients.Length)
+                        model.ObjectiveCoefficients != null &&
+                        idx >= 1 && idx <= model.ObjectiveCoefficients.Length)
                     {
                         cj = model.ObjectiveCoefficients[idx - 1];
                     }
@@ -77,7 +74,7 @@ namespace LPSolver.Analysis
                 cFromModel[j] = cj;
             }
 
-            // --- build A and b from tableau rows ---
+            // ----- A, b from tableau -----
             double[,] A = new double[m, n];
             double[] b = new double[m];
             for (int i = 0; i < m; i++)
@@ -87,10 +84,9 @@ namespace LPSolver.Analysis
                 b[i] = row["RHS"];
             }
 
-            // --- detect basis (unit columns) ---
+            // ----- detect basis (unit columns) -----
             int[] basisOfRow = new int[m];
             for (int ii = 0; ii < m; ii++) basisOfRow[ii] = -1;
-
             for (int j = 0; j < n; j++)
             {
                 int oneAt = -1; bool isUnit = true;
@@ -102,18 +98,14 @@ namespace LPSolver.Analysis
                         if (oneAt != -1) { isUnit = false; break; }
                         oneAt = i;
                     }
-                    else if (Math.Abs(v) > 1e-9)
-                    {
-                        isUnit = false; break;
-                    }
+                    else if (Math.Abs(v) > 1e-9) { isUnit = false; break; }
                 }
                 if (isUnit && oneAt != -1) basisOfRow[oneAt] = j;
             }
-
             bool missing = false; for (int i = 0; i < m; i++) if (basisOfRow[i] < 0) { missing = true; break; }
             if (missing) throw new InvalidOperationException("Could not identify a valid basis from the tableau.");
 
-            // --- form B and B^{-1} ---
+            // ----- B, B^{-1}, y^T = c_B^T B^{-1} -----
             double[,] B = new double[m, m];
             for (int i = 0; i < m; i++)
             {
@@ -122,21 +114,19 @@ namespace LPSolver.Analysis
             }
             double[,] Binv = Invert(B);
 
-            // --- y^T = c_B^T B^{-1} ---
             double[] cB = new double[m];
             for (int i = 0; i < m; i++) cB[i] = cFromModel[basisOfRow[i]];
-            double[] y = MatVecLeft(cB, Binv);
+            double[] y = MatVecLeft(cB, Binv); // dual prices
 
-            // --- reduced costs r_j = c_j - y^T a_j ---
+            // ----- reduced costs r_j = c_j - y^T a_j -----
             var reduced = new Dictionary<string, double>();
             for (int j = 0; j < n; j++)
             {
-                double dot = 0.0;
-                for (int i = 0; i < m; i++) dot += y[i] * A[i, j];
+                double dot = 0.0; for (int i = 0; i < m; i++) dot += y[i] * A[i, j];
                 reduced[colNames[j]] = cFromModel[j] - dot;
             }
 
-            // --- RHS ranges (feasibility) ---
+            // ----- RHS (Δb) ranges keeping feasibility -----
             double[] xB = MatVec(Binv, b);
             var rhsRanges = new Dictionary<string, Range>();
             for (int k = 0; k < m; k++)
@@ -154,7 +144,7 @@ namespace LPSolver.Analysis
                 );
             }
 
-            // --- c-ranges for basic variables ---
+            // ----- Δc ranges for BASIC vars -----
             var cjRanges = new Dictionary<string, Range>();
             string[] basisNames = new string[m];
             for (int p = 0; p < m; p++)
@@ -162,6 +152,7 @@ namespace LPSolver.Analysis
                 int jB = basisOfRow[p];
                 basisNames[p] = colNames[jB];
 
+                // row p of B^{-1}
                 double[] rp = new double[m];
                 for (int j = 0; j < m; j++) rp[j] = Binv[p, j];
 
@@ -172,7 +163,7 @@ namespace LPSolver.Analysis
                     double dj = 0.0; for (int i = 0; i < m; i++) dj += rp[i] * A[i, j];
                     double r0 = reduced[colNames[j]];
                     if (Math.Abs(dj) < 1e-12) continue;
-                    double bound = r0 / dj;      // keep r_j(Δ) <= 0 for max
+                    double bound = r0 / dj;                    // keep r_j(Δ) ≤ 0 (max case)
                     if (dj > 0) { if (bound < hi) hi = bound; }
                     else { if (bound > lo) lo = bound; }
                 }
@@ -183,7 +174,7 @@ namespace LPSolver.Analysis
                 );
             }
 
-            // --- strong duality ---
+            // ----- strong duality check -----
             double zStar = table[0]["RHS"];
             double bTy = 0.0; for (int i = 0; i < m; i++) bTy += b[i] * y[i];
 
@@ -198,15 +189,74 @@ namespace LPSolver.Analysis
             return rep;
         }
 
+        // ----------------- Text section builders (mirrors your txt style) -----------------
+        public static string BuildReducedCostsText(SensitivityReport r, int numDecisionVars)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("Reduced costs:");
+            // print decision vars first as x1..xn; then any extras in the map
+            for (int j = 1; j <= numDecisionVars; j++)
+            {
+                string key = "x" + j.ToString();
+                if (r.ReducedCosts.ContainsKey(key))
+                    sb.AppendLine("  " + key + ": " + r.ReducedCosts[key].ToString("0.000"));
+            }
 
+            // extras (e.g., slacks) in stable order
+            foreach (var kv in r.ReducedCosts.OrderBy(k => k.Key))
+            {
+                if (kv.Key.Length >= 2 && (kv.Key[0] == 'x' || kv.Key[0] == 'X')) continue;
+                sb.AppendLine("  " + kv.Key + ": " + kv.Value.ToString("0.000"));
+            }
+            return sb.ToString();
+        }
+
+        public static string BuildShadowPricesText(SensitivityReport r)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("Shadow prices (y):");
+            for (int i = 0; i < r.DualPrices.Length; i++)
+                sb.AppendLine("  Constraint " + (i + 1) + ": " + r.DualPrices[i].ToString("0.000"));
+            return sb.ToString();
+        }
+
+        // Δc ranges for BASIC vars (allowable change while basis optimal)
+        public static string BuildObjectiveRangesText(SensitivityReport r)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("Objective coefficient ranges (Δc) for BASIC variables:");
+            foreach (var name in r.BasisNames)
+            {
+                Range g = r.CjRangesBasic[name];
+                string lo = g.Down.HasValue ? g.Down.Value.ToString("0.000") : "-inf";
+                string hi = g.Up.HasValue ? g.Up.Value.ToString("0.000") : "+inf";
+                sb.AppendLine("  " + name + ": [" + lo + " , " + hi + "]");
+            }
+            return sb.ToString();
+        }
+
+        // Δb feasibility ranges
+        public static string BuildRhsRangesText(SensitivityReport r)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("RHS ranges (Δb that keep feasibility):");
+            foreach (var kv in r.RhsRanges)
+            {
+                string lo = kv.Value.Down.HasValue ? kv.Value.Down.Value.ToString("0.000") : "-inf";
+                string hi = kv.Value.Up.HasValue ? kv.Value.Up.Value.ToString("0.000") : "+inf";
+                sb.AppendLine("  " + kv.Key + ": [" + lo + " , " + hi + "]");
+            }
+            return sb.ToString();
+        }
+
+        // ----------------- Small linear algebra helpers -----------------
         private static double[] MatVec(double[,] M, double[] v)
         {
             int r = M.GetLength(0), c = M.GetLength(1);
             double[] y = new double[r];
             for (int i = 0; i < r; i++)
             {
-                double s = 0.0;
-                for (int j = 0; j < c; j++) s += M[i, j] * v[j];
+                double s = 0.0; for (int j = 0; j < c; j++) s += M[i, j] * v[j];
                 y[i] = s;
             }
             return y;
@@ -219,8 +269,7 @@ namespace LPSolver.Analysis
             double[] y = new double[c];
             for (int j = 0; j < c; j++)
             {
-                double s = 0.0;
-                for (int i = 0; i < r; i++) s += vLeft[i] * M[i, j];
+                double s = 0.0; for (int i = 0; i < r; i++) s += vLeft[i] * M[i, j];
                 y[j] = s;
             }
             return y;
@@ -235,7 +284,6 @@ namespace LPSolver.Analysis
 
             for (int k = 0; k < n; k++)
             {
-                // pivot
                 int piv = k; double best = Math.Abs(M[k, k]);
                 for (int i = k + 1; i < n; i++)
                 {
@@ -270,6 +318,5 @@ namespace LPSolver.Analysis
                 X[r2, j] = t;
             }
         }
-
     }
 }
