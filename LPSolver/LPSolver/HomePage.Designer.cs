@@ -159,6 +159,7 @@
             this.rtbPreview.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(67)))), ((int)(((byte)(101)))));
             this.rtbPreview.Location = new System.Drawing.Point(62, 294);
             this.rtbPreview.Name = "rtbPreview";
+            this.rtbPreview.ReadOnly = true;
             this.rtbPreview.Size = new System.Drawing.Size(431, 138);
             this.rtbPreview.TabIndex = 9;
             this.rtbPreview.Text = "";
